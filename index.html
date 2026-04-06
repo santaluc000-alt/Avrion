@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Технические работы</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #050508;
+      --deep: #0a0a12;
+      --purple-dark: #1a0a2e;
+      --purple-mid: #3d1a6e;
+      --purple: #7b2ff7;
+      --purple-light: #a855f7;
+      --violet: #c026d3;
+      --glow: #9333ea;
+      --white: #f0e8ff;
+      --dim: #8b7aa8;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+
+    /* === CANVAS BG === */
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* === NOISE OVERLAY === */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+    }
+
+    /* === RADIAL GLOWS === */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: orb-float 12s ease-in-out infinite alternate;
+    }
+    .glow-orb.g1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(123,47,247,0.22) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation-duration: 14s;
+    }
+    .glow-orb.g2 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(192,38,211,0.14) 0%, transparent 70%);
+      bottom: -150px; right: -100px;
+      animation-duration: 18s;
+      animation-direction: alternate-reverse;
+    }
+    .glow-orb.g3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(147,51,234,0.18) 0%, transparent 70%);
+      top: 40%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-duration: 10s;
+    }
+
+    @keyframes orb-float {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(30px, -20px) scale(1.05); }
+      100% { transform: translate(-20px, 30px) scale(0.97); }
+    }
+
+    /* === GRID LINES === */
+    .grid {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image:
+        linear-gradient(rgba(123,47,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(123,47,247,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* === MAIN CONTENT === */
+    .wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* === BADGE === */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(123,47,247,0.12);
+      border: 1px solid rgba(123,47,247,0.35);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--purple-light);
+      margin-bottom: 2.5rem;
+      animation: fade-down 0.8s ease both;
+    }
+    .badge .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(123,47,247,0.7); }
+      50% { box-shadow: 0 0 0 6px rgba(123,47,247,0); }
+    }
+
+    /* === ICON === */
+    .icon-wrap {
+      margin-bottom: 2rem;
+      animation: fade-down 0.8s 0.1s ease both;
+    }
+    .gear-icon {
+      width: 72px; height: 72px;
+      color: var(--purple);
+      filter: drop-shadow(0 0 18px rgba(123,47,247,0.6));
+      animation: spin-slow 10s linear infinite;
+    }
+    @keyframes spin-slow {
+      to { transform: rotate(360deg); }
+    }
+
+    /* === HEADING === */
+    h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--white) 0%, var(--purple-light) 60%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fade-down 0.8s 0.2s ease both;
+      text-shadow: none;
+    }
+
+    /* === DIVIDER === */
+    .divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple), transparent);
+      margin: 0 auto 1.5rem;
+      animation: fade-down 0.8s 0.3s ease both;
+    }
+
+    /* === DESCRIPTION === */
+    p.desc {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-weight: 300;
+      color: var(--dim);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      animation: fade-down 0.8s 0.4s ease both;
+    }
+    p.desc span {
+      color: var(--purple-light);
+      font-weight: 600;
+    }
+
+    /* === DISCORD BUTTON === */
+    .btn-discord {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, #5865F2 0%, #7b2ff7 100%);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 0 30px rgba(88,101,242,0.35), 0 0 60px rgba(123,47,247,0.2);
+      animation: fade-up 0.8s 0.6s ease both;
+    }
+    .btn-discord::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn-discord:hover::before { opacity: 1; }
+    .btn-discord:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 50px rgba(88,101,242,0.5), 0 0 100px rgba(123,47,247,0.3);
+    }
+    .btn-discord:active { transform: translateY(0) scale(0.98); }
+
+    .btn-discord svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+    /* === BOTTOM NOTE === */
+    .note {
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: rgba(139,122,168,0.5);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: fade-up 0.8s 0.8s ease both;
+    }
+
+    /* === ANIMATIONS === */
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === FLOATING PARTICLES (CSS) === */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--purple);
+      opacity: 0;
+      animation: particle-rise var(--dur) var(--delay) ease-in infinite;
+    }
+    @keyframes particle-rise {
+      0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.1; }
+      100% { opacity: 0; transform: translateY(-120vh) scale(1.2); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background canvas for flowing mesh -->
+<canvas id="bg"></canvas>
+
+<!-- Atmospheric glows -->
+<div class="glow-orb g1"></div>
+<div class="glow-orb g2"></div>
+<div class="glow-orb g3"></div>
+
+<!-- Grid -->
+<div class="grid"></div>
+<!-- Noise -->
+<div class="noise"></div>
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+  <div class="badge">
+    <span class="dot"></span>
+    Статус: технические работы
+  </div>
+
+  <div class="icon-wrap">
+    <!-- Gear SVG -->
+    <svg class="gear-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 20a12 12 0 1 0 0 24 12 12 0 0 0 0-24z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M32 4v6M32 54v6M4 32h6M54 32h6M11.03 11.03l4.24 4.24M48.73 48.73l4.24 4.24M11.03 52.97l4.24-4.24M48.73 15.27l4.24-4.24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="32" cy="32" r="4" fill="currentColor" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <h1>Ведутся<br/>технические работы</h1>
+
+  <div class="divider"></div>
+
+  <p class="desc">
+    Мы работаем над чем-то <span>большим</span>.<br/>
+    Хочешь узнать первым — что нас ждёт?<br/>
+    Присоединяйся в наш Discord!
+  </p>
+
+  <a class="btn-discord" href="https://discord.gg/h9fGHnwQtg" target="_blank" rel="noopener noreferrer">
+    <!-- Discord logo -->
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.055a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+    </svg>
+    Присоединиться в Discord
+  </a>
+
+  <p class="note">Скоро что-то произойдёт ✦</p>
+</div>
+
+<script>
+/* ===== CANVAS FLOWING MESH ===== */
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H, points;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  initPoints();
+}
+
+function initPoints() {
+  const count = Math.floor((W * H) / 18000);
+  points = Array.from({ length: count }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 1.5 + 0.5,
+  }));
+}
+
+function drawBg() {
+  // Deep gradient background
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H));
+  grad.addColorStop(0, '#0d0618');
+  grad.addColorStop(0.5, '#080510');
+  grad.addColorStop(1, '#050508');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+const maxDist = 130;
+
+function draw() {
+  drawBg();
+
+  // Update
+  for (const p of points) {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+  }
+
+  // Lines
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      const dx = points[i].x - points[j].x;
+      const dy = points[i].y - points[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < maxDist) {
+        const alpha = (1 - dist / maxDist) * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(points[i].x, points[i].y);
+        ctx.lineTo(points[j].x, points[j].y);
+        ctx.strokeStyle = `rgba(123,47,247,${alpha})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Dots
+  for (const p of points) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(168,85,247,0.55)';
+    ctx.fill();
+  }
+
+  requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+resize();
+draw();
+
+/* ===== FLOATING PARTICLES ===== */
+const container = document.getElementById('particles');
+const colours = ['#7b2ff7','#a855f7','#c026d3','#9333ea','#5865F2'];
+for (let i = 0; i < 28; i++) {
+  const el = document.createElement('div');
+  el.className = 'particle';
+  const size = Math.random() * 4 + 1.5;
+  el.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}%;
+    bottom:${Math.random()*10}%;
+    background:${colours[Math.floor(Math.random()*colours.length)]};
+    --dur:${6+Math.random()*14}s;
+    --delay:${Math.random()*10}s;
+    filter:blur(${Math.random()*1.5}px);
+  `;
+  container.appendChild(el);
+}
+
+/* ===== MOUSE PARALLAX ON GLOWS ===== */
+document.addEventListener('mousemove', e => {
+  const mx = (e.clientX / window.innerWidth - 0.5) * 30;
+  const my = (e.clientY / window.innerHeight - 0.5) * 30;
+  document.querySelector('.g1').style.transform = `translate(${mx}px,${my}px)`;
+  document.querySelector('.g2').style.transform = `translate(${-mx}px,${-my}px)`;
+});
+</script>
+</body>
+</html>
